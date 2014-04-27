@@ -26,30 +26,24 @@ import Main.HTMLReplacer;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 public class EasyMIMServer {
-	public static HashMap<String,String> sessions = new HashMap<String,String>();
+	public static HashMap<String,WebsiteProcessor> sessions = new HashMap<String,WebsiteProcessor>();
 	
 	static class EasyMIMServlet extends HttpServlet
 	{
 		WebsiteProcessor wp;
-	    public EasyMIMServlet(){
-	    	wp = new WebsiteProcessor();
-	    }
+	    public EasyMIMServlet(){}
 	    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	    {
-	    	String base = request.getParameter("url");
-	    	String url = base;
-	    	if(sessions.containsKey(request.getRemoteAddr())){
-	    		String tempBase = sessions.get(request.getRemoteAddr());
-	    		if(base!=null && tempBase!=null && !tempBase.equals(base)){
-	    			sessions.put(request.getRemoteAddr(),base);
-	    		}
-    			base = sessions.get(request.getRemoteAddr());
-    			url = base+request.getRequestURI();
-	    	}else{
-	    		sessions.put(request.getRemoteAddr(),base);
+	    	if(!sessions.containsKey(request.getRemoteAddr())){
+	    		sessions.put(request.getRemoteAddr(),new WebsiteProcessor());
 	    	}
+	    	if(request.getRequestURI().contains("log")){
+	    		System.out.println(request.getQueryString());
+	    		return;
+	    	}
+	    	wp = sessions.get(request.getRemoteAddr());
 			response.setStatus(HttpServletResponse.SC_OK);
-			wp.processRequest(base,url,request, response);
+			wp.processRequest(request, response);
 	    	
 	    }
 	    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
