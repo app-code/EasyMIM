@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -38,7 +39,7 @@ public class EasyMIMServer {
 	    		sessions.put(request.getRemoteAddr(),new WebsiteProcessor());
 	    	}
 	    	if(request.getRequestURI().contains("log")){
-	    		System.out.println(request.getQueryString());
+	    		System.out.println(new Date().toString()+":"+request.getQueryString());
 	    		return;
 	    	}
 	    	wp = sessions.get(request.getRemoteAddr());
