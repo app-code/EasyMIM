@@ -1,4 +1,4 @@
-package MIM;
+package Models;
 
 public class LogElement {
 	public String url;

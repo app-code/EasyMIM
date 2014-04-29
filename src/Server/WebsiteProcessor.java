@@ -1,4 +1,4 @@
-package MIM;
+package Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -115,7 +115,7 @@ public class WebsiteProcessor {
 		String link = "https://"+url;
 		URL u = new URL(link);
 		HttpURLConnection  conn = (HttpURLConnection) u.openConnection();
-		conn.setReadTimeout(5000);
+		conn.setReadTimeout(1000);
 		conn.setRequestMethod(method);
 		conn.setUseCaches(false);
 		Map<String, String[]> params = request.getParameterMap();

