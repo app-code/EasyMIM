@@ -28,9 +28,9 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import sun.org.mozilla.javascript.internal.json.JsonParser;
-import ui.EasyMIMConfig;
 
 import Models.ClientInfo;
+import Models.EasyMIMConfig;
 import Models.LogElement;
 
 import com.google.gson.Gson;
@@ -41,6 +41,7 @@ public class EasyMIMServer {
 	public Server server;
 	public ServletContextHandler context;
 	public WebsiteProcessor wp;
+	
 	static class EasyMIMServlet extends HttpServlet
 	{
 		HashMap<String,ClientInfo> sessions;

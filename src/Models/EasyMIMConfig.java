@@ -1,4 +1,4 @@
-package ui;
+package Models;
 
 public class EasyMIMConfig {
 	public String targetURL;
@@ -6,4 +6,10 @@ public class EasyMIMConfig {
 	public String popUpMessage;
 	public boolean keylogger;
 	public String logSavePath;
+	
+	public EasyMIMConfig(){
+		this.targetURL = "google.com";
+		this.keylogger = true;
+		this.logSavePath = "/log.txt";
+	}
 }
