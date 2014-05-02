@@ -6,7 +6,10 @@ import java.net.URL;
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 
-public class FrontEnd {
+public class EasyMIMUI {
+	
+	
+	
 	/**
 	 * 
 	 */
@@ -34,7 +37,7 @@ public class FrontEnd {
 		JPanel pane = new JPanel(new BorderLayout());
 		
 		
-		URL imageURL = FrontEnd.class.getResource("/image/images.jpeg");
+		URL imageURL = EasyMIMUI.class.getResource("/image/images.jpeg");
 		JLabel icon = new JLabel();
 		icon.setIcon(new ImageIcon(imageURL));
 		JPanel logo = new JPanel();
@@ -63,7 +66,8 @@ public class FrontEnd {
 		JCheckBox isSaveCredential = new JCheckBox();
 		
 		JButton submit = new JButton("Submit");
-
+		
+		//submit.addActionListener(arg0)
 
 		
 		pane.add(logo, BorderLayout.PAGE_START);

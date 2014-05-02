@@ -28,24 +28,33 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import sun.org.mozilla.javascript.internal.json.JsonParser;
+import ui.EasyMIMConfig;
 
+import Models.ClientInfo;
 import Models.LogElement;
 
 import com.google.gson.Gson;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 public class EasyMIMServer {
-	public static HashMap<String,WebsiteProcessor> sessions = new HashMap<String,WebsiteProcessor>();
-	
+	public HashMap<String,ClientInfo> sessions = new HashMap<String,ClientInfo>();
+	public Server server;
+	public ServletContextHandler context;
+	public WebsiteProcessor wp;
 	static class EasyMIMServlet extends HttpServlet
 	{
+		HashMap<String,ClientInfo> sessions;
 		WebsiteProcessor wp;
-	    public EasyMIMServlet(){}
+		ClientInfo ci;
+	    public EasyMIMServlet(HashMap<String,ClientInfo> sessions,WebsiteProcessor wp){
+	    	this.sessions = sessions;
+	    	this.wp = wp;
+	    }
 	    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	    {
 	    	try{
 		    	if(!sessions.containsKey(request.getRemoteAddr())){
-		    		sessions.put(request.getRemoteAddr(),new WebsiteProcessor());
+		    		sessions.put(request.getRemoteAddr(),new ClientInfo());
 		    	}
 		    	if(request.getRequestURI().contains("log")){
 		    		Gson gson = new Gson();
@@ -58,9 +67,9 @@ public class EasyMIMServer {
 		    	}
 		    	//log website visit
 		    	//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+request.getRequestURL()+")");
-		    	wp = sessions.get(request.getRemoteAddr());
+		    	ci = sessions.get(request.getRemoteAddr());
 				response.setStatus(HttpServletResponse.SC_OK);
-				wp.processRequest(request, response);
+				wp.processRequest(request, response,this.ci);
 	    	}catch(Exception e){
 	    		
 	    	}
@@ -78,17 +87,33 @@ public class EasyMIMServer {
 	    	return out;
 	    }
 	}
-	public static void main(String[] args) throws Exception
-	{
-		
-        Server server = new Server(8080);
-        
-        ServletContextHandler context = new ServletContextHandler();
+	private void setUpServer(){
+        server = new Server(8080);
+        context = new ServletContextHandler();
         context.setContextPath("/");
         server.setHandler(context);
-        context.addServlet(new ServletHolder(new EasyMIMServlet()),"/*");
-        //context.addServlet(new ServletHolder(new HelloServlet("Buongiorno Mondo")),"/it/*");
+        context.addServlet(new ServletHolder(new EasyMIMServlet(this.sessions, this.wp)),"/*");
+	}
+	public EasyMIMServer(){
+        wp = new WebsiteProcessor();
+        this.setUpServer();
+	}
+	public EasyMIMServer(EasyMIMConfig config){
+		wp = new WebsiteProcessor(config);
+		this.setUpServer();
+	}
+	public void startServer() throws Exception{
         server.start();
         server.join();
+	}
+	public void terminateServer() throws Exception{
+		server.stop();
+	}
+	public static void main(String[] args) throws Exception
+	{
+		new EasyMIMServer().startServer();
+	}
+	public static void generateServer(EasyMIMConfig config){
+		
 	}
 }

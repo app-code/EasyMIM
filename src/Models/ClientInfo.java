@@ -14,4 +14,8 @@ public class ClientInfo {
 			this.base = base;
 		}
 	}
+	public List<String> getCookies() {
+		// TODO Auto-generated method stub
+		return cookies;
+	}
 }
