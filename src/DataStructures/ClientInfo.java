@@ -1,4 +1,4 @@
-package Models;
+package DataStructures;
 
 import java.util.List;
 

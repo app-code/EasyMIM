@@ -1,4 +1,4 @@
-package Models;
+package DataStructures;
 
 public class LogElement {
 	public String url;

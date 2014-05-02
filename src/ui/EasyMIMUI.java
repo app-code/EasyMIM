@@ -41,7 +41,7 @@ public class EasyMIMUI {
 		JLabel icon = new JLabel();
 		icon.setIcon(new ImageIcon(imageURL));
 		JPanel logo = new JPanel();
-		JLabel prompt = new JLabel("HACK ME NOW");
+		JLabel prompt = new JLabel("EasyMIM: HACK ME NOW");
 		logo.add(prompt);
 		logo.add(icon);
 		
@@ -50,7 +50,7 @@ public class EasyMIMUI {
 		targetURLField.setToolTipText("Enter the site you want to attack");
 
 		JLabel swapImageLabel = new JLabel("Swap image");
-		JButton chooseImageBttn = new JButton("Choose Image");
+		//JButton chooseImageBttn = new JButton("Choose Image");
 		JTextField urlImageTextField = new JTextField();
 		urlImageTextField.setToolTipText("Enter the image url");
 		urlImageTextField.setPreferredSize(urlImageTextField.getPreferredSize());
@@ -90,7 +90,7 @@ public class EasyMIMUI {
 		
 		hGroup.addGroup(MITMLayout.createParallelGroup()
 				.addComponent(targetURLField)
-				.addGroup(MITMLayout.createSequentialGroup().addComponent(chooseImageBttn).addComponent(urlImageTextField))
+				.addGroup(MITMLayout.createSequentialGroup()/*.addComponent(chooseImageBttn)*/.addComponent(urlImageTextField))
 				.addComponent(popUpInput)
 				.addComponent(isKeyLogging)
 				.addComponent(isSaveCredential));
@@ -103,7 +103,7 @@ public class EasyMIMUI {
 				.addComponent(targetURL).addComponent(targetURLField));
 		vGroup.addGroup(MITMLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(swapImageLabel)
-				.addComponent(chooseImageBttn).addComponent(urlImageTextField));
+				/*.addComponent(chooseImageBttn)*/.addComponent(urlImageTextField));
 		vGroup.addGroup(MITMLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(popUpLabel).addComponent(popUpInput));
 		vGroup.addGroup(MITMLayout.createParallelGroup(Alignment.BASELINE)
