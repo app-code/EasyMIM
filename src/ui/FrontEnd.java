@@ -34,7 +34,7 @@ public class FrontEnd {
 		JPanel pane = new JPanel(new BorderLayout());
 		
 		
-		URL imageURL = FrontEnd.class.getResource("image/images.jpeg");
+		URL imageURL = FrontEnd.class.getResource("/image/images.jpeg");
 		JLabel icon = new JLabel();
 		icon.setIcon(new ImageIcon(imageURL));
 		JPanel logo = new JPanel();
