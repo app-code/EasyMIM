@@ -1,4 +1,4 @@
-package Logger;
+package logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,9 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.gson.Gson;
 
-import DataStructures.ClientInfo;
-import DataStructures.LogElement;
-import DataStructures.RequestInfo;
+import datastructures.ClientInfo;
+import datastructures.LogElement;
+import datastructures.RequestInfo;
+
 
 public class Logger {
 	public static String LOG_PARAM = "logType";

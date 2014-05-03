@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 
-import DataStructures.EasyMIMConfig;
-import Server.EasyMIMServer;
+import datastructures.EasyMIMConfig;
+
+import server.EasyMIMServer;
+
 
 public class EasyMIMUI {
 	

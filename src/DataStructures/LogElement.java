@@ -1,4 +1,4 @@
-package DataStructures;
+package datastructures;
 
 public class LogElement {
 	public String url;

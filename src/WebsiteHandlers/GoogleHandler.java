@@ -1,4 +1,4 @@
-package WebsiteHandlers;
+package websitehandlers;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

@@ -1,4 +1,4 @@
-package Server;
+package server;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,6 +22,9 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import logger.Logger;
+
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -33,13 +36,13 @@ import org.eclipse.jetty.util.Jetty;
 
 import sun.org.mozilla.javascript.internal.json.JsonParser;
 
-import DataStructures.ClientInfo;
-import DataStructures.EasyMIMConfig;
-import DataStructures.LogElement;
-import Logger.Logger;
 
 import com.google.gson.Gson;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
+
+import datastructures.ClientInfo;
+import datastructures.EasyMIMConfig;
+import datastructures.LogElement;
 
 public class EasyMIMServer {
 	public HashMap<String,ClientInfo> sessions = new HashMap<String,ClientInfo>();
