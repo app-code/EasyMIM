@@ -36,9 +36,10 @@ public class Logger {
 			String type = params.get(LOG_PARAM)[0];
 			if(type.equals(KEY_LOG_VALUE)){
 				prefix = "Key Stroke Detected: ";
-			}
-			if(type.equals(CREDENTIAL_LOG_VALUE)){
+			}else if(type.equals(CREDENTIAL_LOG_VALUE)){
 				prefix = "Credentials Detected: ";
+			}else{
+				return;
 			}
 		}
 
