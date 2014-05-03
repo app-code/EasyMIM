@@ -54,7 +54,9 @@ public class EasyMIMUI {
 			public void windowClosed(WindowEvent arg0) {
 				// TODO Auto-generated method stub
 				try {
-					server.terminateServer();
+					if(server!=null){
+						server.terminateServer();
+					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
