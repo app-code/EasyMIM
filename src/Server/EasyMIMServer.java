@@ -103,7 +103,4 @@ public class EasyMIMServer {
 	{
 		new EasyMIMServer().startServer();
 	}
-	public static void generateServer(EasyMIMConfig config){
-		
-	}
 }
