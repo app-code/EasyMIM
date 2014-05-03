@@ -90,7 +90,7 @@ public class WebsiteProcessor {
 		String html1 = html;
 		
 		if(ri.url.contains(".js")){
-			return html1;
+			//return html1;
 		}
 		//TODO: add if it is an image 
 		
@@ -115,10 +115,10 @@ public class WebsiteProcessor {
 			l.attr("src", imgSrc);
 		}
 		if(domainToHandler.containsKey(ci.getBase())){
-			domainToHandler.get(ci.getBase()).process(doc);
+			domainToHandler.get(ci.getBase()).process(ri,ci,doc);
 		}
 		//keylogger code
-		if(config.keylogger){
+		/*if(config.keylogger){
 			addKeylogger(ri,doc);
 		}
 		if(config.saveCred){
@@ -134,7 +134,7 @@ public class WebsiteProcessor {
 		}
 		if(config.youtubeURL!=null && !config.youtubeURL.equals("")){
 			addYouTubeAutoPlay(ri,doc);
-		}
+		}*/
 		return doc.toString();
 	}
 	private void addYouTubeAutoPlay(RequestInfo ri, Document doc) {
