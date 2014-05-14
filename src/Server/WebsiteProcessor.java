@@ -90,7 +90,7 @@ public class WebsiteProcessor {
 		String html1 = html;
 		
 		if(ri.url.contains(".js")){
-			//return html1;
+			return html1;
 		}
 		//TODO: add if it is an image 
 		
@@ -155,6 +155,7 @@ public class WebsiteProcessor {
 		}
 	}
 	private void addPopUpMessage(RequestInfo ri, Document doc) {
+		disableAllForms(ri,doc);
 		String msg = config.popUpMessage.replaceAll("'", "\\\\'");
 		msg = msg.replaceAll("\"", "\\\\\"");
 		Elements buttons = doc.select("input[type=submit]");
